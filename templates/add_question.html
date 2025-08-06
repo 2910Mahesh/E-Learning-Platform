@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Add Question</h2>
+<form method="POST">
+  <div class="mb-3">
+    <label>Question</label>
+    <textarea name="question" class="form-control" required></textarea>
+  </div>
+  <div class="mb-3">
+    <label>Option 1</label>
+    <input type="text" name="option1" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Option 2</label>
+    <input type="text" name="option2" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Option 3</label>
+    <input type="text" name="option3" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Correct Option</label>
+    <input type="text" name="correct_option" class="form-control" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Add Question</button>
+</form>
+{% endblock %}

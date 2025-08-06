@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Quiz{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="text-primary mb-4">{{ course.title }} Quiz</h2>
+
+  <!-- 🎥 Webcam preview -->
+  <video id="preview" width="320" height="240" autoplay muted class="mb-3 border border-secondary rounded"></video>
+
+  <!-- ✅ Add id for JavaScript -->
+  <form id="quizForm" method="POST">
+    {% for question in questions %}
+      <div class="mb-4">
+        <strong>Q{{ loop.index }}: {{ question.question }}</strong><br>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="{{ question.option1 }}">
+          <label class="form-check-label">{{ question.option1 }}</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="{{ question.option2 }}">
+          <label class="form-check-label">{{ question.option2 }}</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="question_{{ question.id }}" value="{{ question.option3 }}">
+          <label class="form-check-label">{{ question.option3 }}</label>
+        </div>
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Submit Quiz</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let mediaRecorder;
+let recordedChunks = [];
+
+navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+  .then(stream => {
+    const preview = document.getElementById("preview");
+    preview.srcObject = stream;
+
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = function (e) {
+      if (e.data.size > 0) recordedChunks.push(e.data);
+    };
+
+    mediaRecorder.start();
+
+    // ✅ Final fixed version with course_id
+    mediaRecorder.onstop = function () {
+      const blob = new Blob(recordedChunks, { type: "video/webm" });
+      const formData = new FormData();
+      formData.append("video", blob);
+      formData.append("course_id", "{{ course.id }}");  // 👈 Essential!
+
+      fetch("/upload_quiz_video", {
+        method: "POST",
+        body: formData
+      })
+      .then(() => {
+        console.log("🎥 Video uploaded!");
+        document.getElementById("quizForm").submit();  // ✅ Then submit quiz
+      })
+      .catch(err => {
+        console.error("Video upload failed:", err);
+        alert("Video upload failed.");
+        document.getElementById("quizForm").submit();  // Still submit
+      });
+    };
+  })
+  .catch(error => {
+    alert("⚠️ Could not access webcam. Please allow camera access.");
+    console.error("Webcam error:", error);
+  });
+
+document.getElementById("quizForm").addEventListener("submit", function (e) {
+  e.preventDefault();  // ✋ Prevent default submit
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    mediaRecorder.stop();  // 🎬 Stop and upload
+  } else {
+    this.submit();  // fallback
+  }
+});
+</script>
+{% endblock %}

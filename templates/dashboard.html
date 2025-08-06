@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h3 class="mb-4 text-primary">
+    <i class="fas fa-chart-line"></i> Your Dashboard
+  </h3>
+
+  {% if courses %}
+  <div class="row">
+    {% for course, progress in courses %}
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">{{ course.title }}</h5>
+          <p><i class="fas fa-chalkboard-teacher"></i> {{ course.instructor }}</p>
+          <p class="text-muted">{{ course.description }}</p>
+
+          {% set safe_progress = progress | default(0) | int %}
+          <div class="progress mb-2">
+            <div class="progress-bar bg-success progress-bar-animate"
+                 role="progressbar"
+                 data-progress="{{ safe_progress }}"
+                 aria-valuenow="{{ safe_progress }}"
+                 aria-valuemin="0"
+                 aria-valuemax="100">
+              {{ safe_progress }}%
+            </div>
+          </div>
+
+          <div class="mt-auto">
+            <a href="{{ url_for('course_quiz', course_id=course.id) }}"
+               class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-pen-alt"></i> Take Quiz
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info text-center">
+    You haven't enrolled in any courses yet.
+  </div>
+  {% endif %}
+
+  <div class="text-center mt-4">
+    <a href="{{ url_for('course_catalog') }}" class="btn btn-primary">
+      <i class="fas fa-plus-circle"></i> Browse More Courses
+    </a>
+  </div>
+
+  <!-- ✅ New Notes button added -->
+  <div class="text-center mt-3">
+    <a href="{{ url_for('notes') }}" class="btn btn-outline-primary">
+      📝 My Notes
+    </a>
+  </div>
+
+  <div class="text-center mt-3">
+    <button onclick="downloadPDF()" class="btn btn-outline-dark">
+      <i class="fas fa-file-download"></i> Download Dashboard as PDF
+    </button>
+  </div>
+
+  <div class="text-center mt-3">
+    <button onclick="toggleDarkMode()" class="btn btn-secondary">
+      <i class="fas fa-moon"></i> Toggle Dark Mode
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+  // Animate progress bars
+  document.addEventListener("DOMContentLoaded", function () {
+    const progressBars = document.querySelectorAll(".progress-bar-animate");
+    progressBars.forEach(bar => {
+      const target = bar.dataset.progress;
+      bar.style.width = "0%";
+      setTimeout(() => {
+        bar.style.transition = "width 1s ease-in-out";
+        bar.style.width = target + "%";
+      }, 100);
+    });
+  });
+
+  // PDF Download
+  function downloadPDF() {
+    const element = document.body;
+    html2pdf().from(element).save('dashboard.pdf');
+  }
+
+  // Toggle dark mode
+  function toggleDarkMode() {
+    document.body.classList.toggle("bg-dark");
+    document.body.classList.toggle("text-light");
+  }
+</script>
+{% endblock %}

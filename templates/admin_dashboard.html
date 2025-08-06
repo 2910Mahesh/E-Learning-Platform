@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+<a href="{{ url_for('add_course') }}" class="btn btn-success mb-3">Add New Course</a>
+<a href="{{ url_for('change_password') }}" class="btn btn-warning mb-3">Change Password</a>
+
+
+<ul class="list-group">
+  {% for course in courses %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      {{ course.title }} ({{ course.instructor }})
+      <a href="{{ url_for('add_question', course_id=course.id) }}" class="btn btn-sm btn-outline-primary">Add Question</a>
+    </li>
+  {% endfor %}
+</ul>
+
+<!-- 🎥 Quiz Recordings Table -->
+<h4 class="mt-5">📹 Quiz Recordings</h4>
+{% if recordings %}
+<table class="table table-bordered mt-3">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Course</th>
+      <th>Recording</th>
+      <th>Timestamp</th>
+      <th>Download</th> <!-- ✅ Extra column -->
+    </tr>
+  </thead>
+  <tbody>
+    {% for rec in recordings %}
+    <tr>
+      <td>{{ rec.user.username }}</td>
+      <td>{{ rec.course.title }}</td>
+      <td>
+        <video width="200" controls>
+          <source src="{{ url_for('static', filename='quiz_recordings/' + rec.filename) }}" type="video/webm">
+        </video>
+      </td>
+      <td>{{ rec.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+      <td>
+        <a href="{{ url_for('static', filename='quiz_recordings/' + rec.filename) }}" download class="btn btn-sm btn-primary">
+          ⬇️ Download
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+  <div class="alert alert-info">No quiz recordings found yet.</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,14 @@
+{% if course.video_url %}
+  <h5>Embedded Video (YouTube):</h5>
+  <div class="ratio ratio-16x9">
+    <iframe src="{{ course.video_url }}" frameborder="0" allowfullscreen></iframe>
+  </div>
+{% elif course.video_file %}
+  <h5>Uploaded Video:</h5>
+  <video width="100%" height="auto" controls>
+    <source src="{{ url_for('static', filename=course.video_file.split('static/')[1]) }}" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+{% else %}
+  <p>No video available for this course.</p>
+{% endif %}
